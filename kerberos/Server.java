@@ -15,6 +15,9 @@ public class Server extends Object {
 	private String myName; // Konstruktor-Parameter
 	private KDC myKDC; // wird bei KDC-Registrierung gespeichert
 	private long myKey; // wird bei KDC-Registrierung gespeichert
+	
+	private final String COMMAND = "showFile";
+	private long serverSessionKey; // K(C,S)
 
 	// Konstruktor
 	public Server(String name) {
@@ -34,9 +37,21 @@ public class Server extends Object {
 				+ " mit ServerKey " + myKey);
 	}
 
-	public boolean requestService(Ticket srvTicket, Auth srvAuth,
-			String command, String parameter) {
-			/* ToDo */
+	public boolean requestService(Ticket srvTicket, Auth srvAuth, String command, String parameter) {
+		/* ToDo */		
+		if(!this.COMMAND.equals(command)) {
+			System.out.println("Unerwartetes Kommando");
+			return false;
+		} else {
+			//Serverticket mit eigenen Schlüssel entschlüsseln
+			if(srvTicket.decrypt(this.myKey)) {System.out.println("Entschluesselung des ServerTickets fehlgeschlagen");}
+			//ServerSessionKey aus dem Ticket holen
+			serverSessionKey = srvTicket.getSessionKey();
+			//Authentifikation entschlüsseln mit dem serverSessionKey
+			if(srvAuth.decrypt(serverSessionKey)) {System.out.println("Entschluesseln der Authentifikation fehlgeschlagen");}
+			
+			return showFile(parameter);
+		}
 	}
 
 	/* *********** Services **************************** */
@@ -104,10 +119,4 @@ public class Server extends Object {
 			return false;
 		}
 	}
-	
-//	public static void main(String[] args) {
-//		
-//		Server s = new Server("server");
-//		s.showFile("E:\\Studium\\WS2015_2016\\IT-Sicherheit\\Aufgabe4\\material\\file.txt");
-//	}
 }
