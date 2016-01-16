@@ -15,12 +15,14 @@ public class Client extends Object {
 	private long tgsSessionKey; // K(C,TGS) // Speicherung bei Login nötig
 	
 	private long userPasswordKey; // K(C)
+	private Ticket serverTicket = null;
 
 	// Konstruktor
 	public Client(KDC kdc) {
 		myKDC = kdc;
 	}
 
+	// Kerberos-Protokoll ---> Schritt 1 und Schritt 2
 	public boolean login(String userName, char[] password) {
 		/* ToDo */
 		//User-Registrierung
@@ -52,11 +54,40 @@ public class Client extends Object {
 		return true;	
 	}
 
+	//FilePath = "E:\\Studium\\WS2015_2016\\IT-Sicherheit\\Aufgabe4\\material\\file.txt"
+	// Kerberos-Protokoll ---> Schritt 3, Schritt 4 und Schritt 5
 	public boolean showFile(Server fileServer, String filePath) {
 		/* ToDo */
-		//TGS-Ticket mit TGS-Session-Key verschlüsseln
-		if (tgsTicket.encrypt(tgsSessionKey)) {
-			myKDC.requestServerTicket(tgsTicket, tgsAuth, serverName, nonce)
+		// Authentifikation für den Client erstellen und verschlüsseln mit dem tgsSessionKey
+		Auth auth = new Auth(currentUser, System.currentTimeMillis());
+		auth.encrypt(tgsSessionKey);
+		
+		//Aufgabe: Serverticket vom KDC (TGS) holen
+		TicketResponse ticketResponse = myKDC.requestServerTicket(tgsTicket, auth, fileServer.getName(), generateNonce());
+		
+		//Ticket-Anfrage entschlüsseln
+		if(!ticketResponse.decrypt(userPasswordKey)) {
+			System.out.println("Ticket-Anfrage wurde schon entschluesselt, oder der Schluessel ist falsch!");
+			return false;
+		}
+		
+		//Überprüfung, ob überhaupt eine Ticket-Anfrage zurück kommt
+		if(ticketResponse == null) {
+			System.out.println("Ticketanfrage fehlgeschlagen");
+			return false;
+		}
+		
+		//ServerTicket und SessionKEy speichern
+		serverTicket = ticketResponse.getResponseTicket();
+		tgsSessionKey = ticketResponse.getSessionKey();
+		
+		// Authentifikation für den Client erstellen und verschlüsseln mit dem tgsSessionKey
+		auth = new Auth(currentUser, System.currentTimeMillis());
+		auth.encrypt(tgsSessionKey);
+		
+		//Aufgabe: ...und „showFile“-Service beim übergebenen Fileserver anfordern.
+		if(!(fileServer.requestService(serverTicket, auth, "showFile", filePath))) {
+			System.out.println("Anfrage zum auslesen der Datei ist fehlgeschlagen");
 		}
 		
 		return true;

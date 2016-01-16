@@ -103,8 +103,37 @@ public class KDC extends Object {
 	 * ****************************
 	 */
 
+	// ############## TO-DO ##############################
+	
 	public TicketResponse requestServerTicket(Ticket tgsTicket, Auth tgsAuth, String serverName, long nonce) {
-				/* ToDo */
+		/* Anforderung eines Server-Tickets bearbeiten. Rückgabe: TicketResponse für die Anfrage */
+
+		TicketResponse tgsTicketResp = null;
+		Ticket serverTicket = null;
+		long currentTime = 0;
+
+		// Server-Antwort zusammenbauen
+		if (userName.equals(user) && // Usernamen und Userpasswort in der
+		// Datenbank suchen!
+		tgsServerName.equals(tgsName)) {
+			// OK, neuen Session Key für Client und Server generieren
+			tgsSessionKey = generateSimpleKey();
+			currentTime = (new Date()).getTime(); // Anzahl mSek. seit
+			// 1.1.1970
+
+			// Zuerst TGS-Ticket basteln ...
+			serverTicket = new Ticket(user, tgsName, currentTime, currentTime + tenHoursInMillis, tgsSessionKey);
+
+			// ... dann verschlüsseln ...
+			serverTicket.encrypt(tgsKey);
+
+			// ... dann Antwort erzeugen
+			tgsTicketResp = new TicketResponse(tgsSessionKey, nonce, serverTicket);
+
+			// ... und verschlüsseln
+			tgsTicketResp.encrypt(userPasswordKey);
+		}
+		return tgsTicketResp;
 	}
 
 	/* *********** Hilfsmethoden **************************** */

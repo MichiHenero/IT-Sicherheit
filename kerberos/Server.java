@@ -104,4 +104,10 @@ public class Server extends Object {
 			return false;
 		}
 	}
+	
+//	public static void main(String[] args) {
+//		
+//		Server s = new Server("server");
+//		s.showFile("E:\\Studium\\WS2015_2016\\IT-Sicherheit\\Aufgabe4\\material\\file.txt");
+//	}
 }
