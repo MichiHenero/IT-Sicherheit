@@ -44,11 +44,11 @@ public class Server extends Object {
 			return false;
 		} else {
 			//Serverticket mit eigenen Schlüssel entschlüsseln
-			if(srvTicket.decrypt(this.myKey)) {System.out.println("Entschluesselung des ServerTickets fehlgeschlagen");}
+			if(!srvTicket.decrypt(this.myKey)) {System.out.println("Entschluesselung des ServerTickets fehlgeschlagen");}
 			//ServerSessionKey aus dem Ticket holen
 			serverSessionKey = srvTicket.getSessionKey();
 			//Authentifikation entschlüsseln mit dem serverSessionKey
-			if(srvAuth.decrypt(serverSessionKey)) {System.out.println("Entschluesseln der Authentifikation fehlgeschlagen");}
+			if(!srvAuth.decrypt(serverSessionKey)) {System.out.println("Entschluesseln der Authentifikation fehlgeschlagen");}
 			
 			return showFile(parameter);
 		}
@@ -119,4 +119,10 @@ public class Server extends Object {
 			return false;
 		}
 	}
+	
+	public static void main(String[] args) {
+		Server s = new Server("test");
+		s.showFile(".\\material\\file.txt");
+	}
+	
 }

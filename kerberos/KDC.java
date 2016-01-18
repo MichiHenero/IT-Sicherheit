@@ -112,26 +112,28 @@ public class KDC extends Object {
 		Ticket serverTicket = null;
 		long currentTime = 0;
 
-		// Server-Antwort zusammenbauen
-		if (userName.equals(user) && // Usernamen und Userpasswort in der
-		// Datenbank suchen!
-		tgsServerName.equals(tgsName)) {
+		//TGS-Ticket entschlüsseln
+		tgsTicket.decrypt(tgsKey);
+		
+		//Daten aus dem TGS-Ticket rausholen und vergleichen
+		if ((tgsSessionKey == (tgsTicket.getSessionKey())) && (user.equals(tgsTicket.getClientName())) && tgsName.equals(tgsTicket.getServerName())) {
+			
 			// OK, neuen Session Key für Client und Server generieren
-			tgsSessionKey = generateSimpleKey();
+			serverSessionKey = generateSimpleKey();
 			currentTime = (new Date()).getTime(); // Anzahl mSek. seit
 			// 1.1.1970
 
 			// Zuerst TGS-Ticket basteln ...
-			serverTicket = new Ticket(user, tgsName, currentTime, currentTime + tenHoursInMillis, tgsSessionKey);
+			serverTicket = new Ticket(user, serverName, currentTime, currentTime + tenHoursInMillis, serverSessionKey);
 
-			// ... dann verschlüsseln ...
-			serverTicket.encrypt(tgsKey);
+			// ... dann verschlüsseln mit ServerSchlüssel von übergebenen Servernamen ...
+			serverTicket.encrypt(this.getServerKey(serverName));
 
 			// ... dann Antwort erzeugen
-			tgsTicketResp = new TicketResponse(tgsSessionKey, nonce, serverTicket);
+			tgsTicketResp = new TicketResponse(serverSessionKey, nonce, serverTicket);
 
 			// ... und verschlüsseln
-			tgsTicketResp.encrypt(userPasswordKey);
+			tgsTicketResp.encrypt(tgsSessionKey);
 		}
 		return tgsTicketResp;
 	}

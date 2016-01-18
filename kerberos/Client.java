@@ -34,15 +34,15 @@ public class Client extends Object {
 		//User-Passwort erstellen
 		userPasswordKey = generateSimpleKeyFromPassword(password);
 		
-		//Ticket-Anfrage entschlüsseln
-		if(!ticketResponse.decrypt(userPasswordKey)) {
-			System.out.println("Ticket-Anfrage wurde schon entschluesselt, oder der Schluessel ist falsch!");
-			return false;
-		}
-		
 		//Überprüfung, ob überhaupt eine Ticket-Anfrage zurück kommt
 		if(ticketResponse == null) {
 			System.out.println("Ticketanfrage fehlgeschlagen");
+			return false;
+		}
+		
+		//Ticket-Anfrage entschlüsseln
+		if(!ticketResponse.decrypt(userPasswordKey)) {
+			System.out.println("Ticket-Anfrage wurde schon entschluesselt, oder der Schluessel ist falsch!");
 			return false;
 		}
 		
@@ -58,22 +58,22 @@ public class Client extends Object {
 	// Kerberos-Protokoll ---> Schritt 3, Schritt 4 und Schritt 5
 	public boolean showFile(Server fileServer, String filePath) {
 		/* ToDo */
-		// Authentifikation für den Client erstellen und verschlüsseln mit dem tgsSessionKey
+		//Authentifikation für den Client erstellen und verschlüsseln mit dem tgsSessionKey
 		Auth auth = new Auth(currentUser, System.currentTimeMillis());
 		auth.encrypt(tgsSessionKey);
 		
 		//Aufgabe: Serverticket vom KDC (TGS) holen
 		TicketResponse ticketResponse = myKDC.requestServerTicket(tgsTicket, auth, fileServer.getName(), generateNonce());
 		
-		//Ticket-Anfrage entschlüsseln
-		if(!ticketResponse.decrypt(userPasswordKey)) {
-			System.out.println("Ticket-Anfrage wurde schon entschluesselt, oder der Schluessel ist falsch!");
-			return false;
-		}
-		
 		//Überprüfung, ob überhaupt eine Ticket-Anfrage zurück kommt
 		if(ticketResponse == null) {
 			System.out.println("Ticketanfrage fehlgeschlagen");
+			return false;
+		}
+		
+		//Ticket-Anfrage entschlüsseln
+		if(!ticketResponse.decrypt(tgsSessionKey)) {
+			System.out.println("Ticket-Anfrage wurde schon entschluesselt, oder der Schluessel ist falsch!");
 			return false;
 		}
 		

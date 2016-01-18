@@ -44,11 +44,11 @@ public class KerberosSim {
 		 */
 
 		// -------- Start Initialisierung des Systems ------------------
-		String userName = "axz467";
+		String userName = "User";
 		char[] password = { 'S', 'e', 'c', 'r', 'e', 't', '!' };
 		String serverName = "myFileserver";
 		String tgsName = "myTGS";
-		String filePath = "C:/Temp/ITS.txt";
+		String filePath = ".\\material\\file.txt";
 
 		KerberosSim thisSession = new KerberosSim();
 
